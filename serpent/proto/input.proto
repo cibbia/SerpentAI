@@ -1,0 +1,15 @@
+syntax = "proto3";
+package serpent;
+
+message InputEvent {
+  uint64 timestamp = 1; // microseconds epoch UTC
+  string device  = 2;   // keyboard | mouse
+  string name    = 3;   // KEY_A, BTN_LEFT, MOVE
+  string action  = 4;   // DOWN | UP | SCROLL | MOVE
+  int32  x       = 5;   // optional for mouse
+  int32  y       = 6;
+}
+
+service InputService {
+  rpc StreamInputs(stream InputEvent) returns (stream InputEvent);
+}
