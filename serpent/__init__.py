@@ -45,6 +45,7 @@ except ModuleNotFoundError:
     _create_stub_module("skimage.measure")
     _create_stub_module("skimage.filters")
     _create_stub_module("skimage.morphology")
+    _create_stub_module("skimage.metrics", {"structural_similarity": lambda *args, **kwargs: 0.0})
 
 # ------- comet-ml stub ------------------------------------------------------
 try:

@@ -47,3 +47,24 @@ Guides, tutorials and videos are being produced and added to the [GitHub Wiki](h
 _Experiment: Game agent learning to match tiles (You Must Build a Boat)_
 
 _Business Contact: info@serpent.ai_
+
+## Installation (2025 refresh)
+
+Serpent.AI now ships with **two install flavours**.
+
+1. **Minimal** – Installs only the lightweight core and CLI (suitable for dev/CI and unit-testing).  _Default._
+   ```bash
+   pip install serpentai  # or `poetry add serpentai`
+   ```
+
+2. **Full** – Pulls in the complete scientific/ML stack (PyTorch, TensorFlow, scikit-image, etc.) required for training agents and computer-vision heavy workflows.
+   ```bash
+   pip install serpentai[full]
+   ```
+
+>  ⚠  The first install is ~10 MB, the full one can exceed 2 GB including CUDA wheels – choose wisely!
+
+### Python compatibility
+
+• CPython 3.8 → 3.13.
+• Linux & Windows officially supported. macOS may work but GPU training is **not** supported.

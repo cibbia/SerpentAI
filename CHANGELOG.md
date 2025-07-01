@@ -108,3 +108,13 @@ Exiting Beta! Changed the versioning scheme to YEAR.QUARTER.RELEASE
 ## 0.1.0b1
 
 * Initial Beta Release
+
+## 2025.3.0
+
+* MAINTENANCE – Modernised dependency stack (NumPy 1.26, SciPy 1.11, scikit-image 0.23, scikit-learn 1.4, redis-py 5.x etc.)
+* MAINTENANCE – Added optional `[full]` install extra; default install is now lightweight.
+* MAINTENANCE – Deprecated `compare_ssim` replaced with `skimage.metrics.structural_similarity`.
+* MAINTENANCE – Analytics timestamp now uses timezone-aware `datetime.now(timezone.utc)`.
+* FEATURE – New GitHub Action to run `pip-audit` on pushes, PRs and weekly cron.
+* DOC – Updated README install instructions and CONTRIBUTING guide.
+* DOC – Added SECURITY.md outlining vulnerability management process.

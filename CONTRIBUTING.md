@@ -20,6 +20,26 @@ Found a bug? Something misbehaving? Reporting issues is a great and accessible w
 
 Pull requests for outstanding issues clearly labeled with *BUG* will be accepted.
 
+### Local development tips (2025 refresh)
+
+* The **unit-test suite is designed to run without heavyweight ML/vision libraries**. A small shim in `serpent/__init__.py` provides stubs when they are missing.  
+  This means you can hack on the core framework quickly:
+  ```bash
+  poetry install --with dev  # installs pytest & pip-audit only
+  poetry run pytest
+  ```
+  For end-to-end game-agent experiments you'll still need the full stack:
+  ```bash
+  poetry install --with full,dev
+  ```
+
+* Before submitting a PR please run:
+  ```bash
+  poetry run pip-audit
+  poetry run pytest
+  ```
+  The CI pipeline will fail if any vulnerabilities or tests regress.
+
 ## Performance Improvements
 
 Pull requests demonstrating and including a significantly faster way of doing something Serpent.AI currently does will be accepted.

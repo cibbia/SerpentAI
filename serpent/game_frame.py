@@ -3,6 +3,7 @@ import skimage.measure
 import skimage.transform
 import skimage.filters
 import skimage.morphology
+from skimage.metrics import structural_similarity
 
 import numpy as np
 
@@ -100,7 +101,7 @@ class GameFrame:
         return [int(i) for i in values[np.argsort(counts)[::-1][0]]]
 
     def compare_ssim(self, previous_game_frame):
-        return skimage.measure.compare_ssim(previous_game_frame.ssim_frame, self.ssim_frame)
+        return structural_similarity(previous_game_frame.ssim_frame, self.ssim_frame)
 
     def difference(self, previous_game_frame):
         current = skimage.filters.gaussian(self.grayscale_frame, 8)
