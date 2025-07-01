@@ -4,8 +4,12 @@ import pytesseract
 from serpent.grpc.frame_client import FrameConsumerSync
 from streamlit_drawable_canvas import st_canvas
 import io, time
+from pathlib import Path
 
 st.header("Reward Wizard 🏆")
+
+plugin_name = st.sidebar.text_input("Plugin name", st.session_state.get("plugin_name","Generic_QUICKSTART"))
+st.session_state["plugin_name"] = plugin_name
 
 if 'consumer' not in st.session_state:
     st.session_state.consumer = FrameConsumerSync()
@@ -41,5 +45,10 @@ if canvas_result.json_data and len(canvas_result.json_data["objects"]):
                           value="int(text.strip()) if text.strip().isdigit() else 0")
 
     if st.button("Save reward function to plugin"):
-        st.success("Reward function saved (stub). Reload Serpent to take effect.")
-        # TODO: locate current plugin and write function
+        plugin_dir = Path("plugins/games") / f"{plugin_name}Plugin"
+        plugin_dir.mkdir(parents=True, exist_ok=True)
+        file_path = plugin_dir / "reward.py"
+        with open(file_path, "w") as f:
+            f.write(f"""# Auto-generated reward function\nfrom typing import List\nfrom serpent.game_frame import GameFrame\n\n\n
+def reward(frames: List[GameFrame], **kwargs):\n    # 'frames' is a buffer (latest last)\n    import pytesseract, numpy as np\n    frame = frames[-1].frame\n    roi = frame[{top}:{top+height}, {left}:{left+width}]\n    text = pytesseract.image_to_string(roi)\n    return {expr}\n""")
+        st.success(f"Reward function saved to {file_path}. Relaunch game to take effect.")
