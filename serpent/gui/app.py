@@ -2,6 +2,8 @@ import os
 import streamlit as st
 import time
 from typing import List
+import sys
+import subprocess, webbrowser
 
 try:
     from serpent.grpc.frame_client import FrameConsumerSync
@@ -31,6 +33,13 @@ if st.sidebar.button("Generate Plugin"):
 
 st.sidebar.header("Frame Stream")
 start_stream = st.sidebar.button("Start Stream")
+
+# TensorBoard launch
+st.sidebar.header("TensorBoard")
+if st.sidebar.button("Open TensorBoard"):
+    logdir = os.path.abspath("runs")
+    subprocess.Popen([sys.executable, "-m", "tensorboard", "--logdir", logdir, "--port", "6006"])
+    webbrowser.open("http://localhost:6006")
 
 frame_area = st.empty()
 

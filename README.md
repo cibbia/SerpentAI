@@ -80,3 +80,23 @@ python -m serpent.examples.train_sb3  # coming soon
 ```
 
 This will let you train PPO/A2C/DQN agents on your favourite games with just a few lines of code.
+
+## Experiment tracking with TensorBoard
+
+Serpent now writes training metrics to `runs/` (PyTorch standard).  View them with either:
+
+```bash
+serpent tensorboard         # opens browser at http://localhost:6006
+```
+
+or click **TensorBoard → Open** in the Streamlit sidebar.
+
+## AppImage auto-update
+
+The generated AppImage embeds *update information* so you can delta-update in place:
+
+```bash
+./SerpentAI-*.AppImage --appimage-update
+```
+
+or download [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) and just double-click.

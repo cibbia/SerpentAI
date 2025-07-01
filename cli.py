@@ -399,6 +399,17 @@ def grab_frames(width, height, x_offset, y_offset, pipeline, use_grpc):
         pass
 
 
+@click.command(help="Launch local TensorBoard for runs/ directory")
+def tensorboard():
+    import subprocess, sys, os, webbrowser
+    logdir = os.path.abspath("runs")
+    try:
+        subprocess.Popen([sys.executable, "-m", "tensorboard", "--logdir", logdir, "--port", "6006"])
+        webbrowser.open("http://localhost:6006")
+    except FileNotFoundError:
+        click.echo("TensorBoard not installed. Try `pip install tensorboard`. ")
+
+
 def _download_module(url, file_path):
     import requests
     import tqdm
@@ -493,6 +504,9 @@ cli.add_command(sdk_uninstall_plugin)
 
 # Register command
 cli.add_command(grab_frames)
+
+# TensorBoard
+cli.add_command(tensorboard)
 
 
 if __name__ == "__main__":

@@ -112,5 +112,12 @@ fi
 
 # linuxdeploy outputs to current dir
 mv *.AppImage "${OUTPUT}"
+
+# Generate zsync + embed update information for AppImageUpdate
+UPDATE_URL="gh-releases-zsync|SerpentAI|SerpentAI|latest|SerpentAI-*-${ARCH}.AppImage.zsync"
+
+# Re-run appimagetool with update info (requires appimagetool)
+"${APPIMAGETOOL}" --updateinformation="${UPDATE_URL}" "${APPDIR}" "${OUTPUT}" > /dev/null 2>&1 || true
+
 chmod +x "${OUTPUT}"
 echo "\n✅  Built ${OUTPUT}"
