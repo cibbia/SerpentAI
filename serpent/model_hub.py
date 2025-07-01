@@ -59,5 +59,13 @@ def download_model(model_id: str) -> Path:
             if chunk:
                 f.write(chunk)
                 pbar.update(len(chunk))
-    # TODO verify sha256
+    # Verify checksum if provided
+    if meta.get("sha256") and meta["sha256"] != "dummy":
+        h = hashlib.sha256()
+        with open(dest, "rb") as f:
+            for b in iter(lambda: f.read(8192), b""):
+                h.update(b)
+        if h.hexdigest() != meta["sha256"]:
+            dest.unlink(missing_ok=True)
+            raise ValueError("SHA256 mismatch after download. File removed.")
     return dest
