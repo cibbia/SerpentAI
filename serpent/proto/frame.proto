@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package serpent;
+
+// A single raw image frame captured from the game.
+message Frame {
+  uint64 timestamp = 1; // microseconds since epoch
+  bytes  data      = 2; // raw PNG or raw RGB bytes
+  uint32 width     = 3;
+  uint32 height    = 4;
+  string format    = 5; // "RGB", "PNG" etc.
+}
+
+// Empty message for signalling end or simple requests.
+message Empty {}
+
+service FrameService {
+  // Bidirectional streaming of frames between grabber and clients.
+  rpc StreamFrames(stream Frame) returns (stream Frame);
+}

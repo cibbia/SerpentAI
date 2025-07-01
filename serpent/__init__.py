@@ -132,3 +132,11 @@ for _opt in ("ultralytics", "onnxruntime"):
 
 # Expose package version
 __version__ = "0.1.dev0"
+
+# ------- gRPC stubs ----------------------------------------------------------
+try:
+    import grpc  # noqa: F401
+except ModuleNotFoundError:
+    # Minimal stub to satisfy imports
+    _create_stub_module("grpc")
+    _create_stub_module("grpc.aio")
