@@ -146,3 +146,4 @@ try:
     import streamlit  # noqa: F401
 except ModuleNotFoundError:
     _create_stub_module("streamlit", {"run": lambda *args, **kwargs: None})
+    _create_stub_module("streamlit_drawable_canvas")

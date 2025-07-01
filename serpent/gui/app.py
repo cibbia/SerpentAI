@@ -17,6 +17,12 @@ st.set_page_config(page_title="Serpent.AI Dashboard", layout="wide")
 
 st.title("🕹️  Serpent.AI Dashboard")
 
+page = st.sidebar.selectbox("Page", ["Stream", "Reward Wizard"])
+
+if page == "Reward Wizard":
+    from serpent.gui import reward_wizard  # noqa: F401
+    st.stop()
+
 if FrameConsumerSync is None:
     st.error("gRPC dependencies not installed. Please install serpentai[full].")
     st.stop()
