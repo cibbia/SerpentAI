@@ -100,3 +100,16 @@ The generated AppImage embeds *update information* so you can delta-update in pl
 ```
 
 or download [AppImageUpdate](https://github.com/AppImage/AppImageUpdate) and just double-click.
+
+### Wayland users (experimental)
+
+The default frame grabber expects X11. To test the experimental PipeWire backend:
+
+```bash
+pip install serpentai[pipewire]
+export SERPENT_WAYLAND_EXPERIMENT=1  # or set frame_grabber.backend: pipewire
+serpent framebus &
+serpent grab_frames 1280 720 0 0 "|PNG" --grpc &
+```
+
+You will get a portal permission pop-up on GNOME/KDE the first time.

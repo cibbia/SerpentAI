@@ -1,6 +1,7 @@
 import numpy as np
 
 import mss
+import os, shutil
 
 from redis import StrictRedis
 
@@ -18,6 +19,11 @@ try:
 except Exception:
     FrameProducer = None  # type: ignore
 
+try:
+    from serpent.capture.pipewire_ffmpeg import FFmpegPipeWireCapture  # type: ignore
+except Exception:
+    FFmpegPipeWireCapture = None  # type: ignore
+
 redis_client = StrictRedis(**config["redis"])
 
 
@@ -34,7 +40,20 @@ class FrameGrabber:
         self.frame_buffer_size = buffer_seconds * fps
 
         self.redis_client = redis_client
-        self.screen_grabber = mss.mss()
+        self.backend = "x11"
+        if (
+            os.getenv("SERPENT_WAYLAND_EXPERIMENT") == "1"
+            or config["frame_grabber"].get("backend") == "pipewire"
+        ) and os.getenv("XDG_SESSION_TYPE") == "wayland" and FFmpegPipeWireCapture is not None:
+            try:
+                self.pipewire = FFmpegPipeWireCapture(self.width, self.height)
+                self.backend = "pipewire"
+            except Exception:
+                self.pipewire = None
+        else:
+            self.pipewire = None
+
+        self.screen_grabber = None if self.backend == "pipewire" else mss.mss()
 
         self.frame_transformation_pipeline = None
 
@@ -110,6 +129,9 @@ class FrameGrabber:
                 time.sleep(frame_time_left)
 
     def grab_frame(self):
+        if self.backend == "pipewire" and self.pipewire is not None:
+            return self.pipewire.grab()
+
         frame = np.array(
             self.screen_grabber.grab({
                 "top": self.y_offset,

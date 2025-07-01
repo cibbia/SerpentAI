@@ -149,7 +149,7 @@ except ModuleNotFoundError:
     _create_stub_module("streamlit_drawable_canvas")
 
 # requests & tqdm stubs
-for _m in ("requests", "tqdm"):
+for _m in ("requests", "tqdm", "ffmpeg" , "ffmpeg_python"):
     try:
         __import__(_m)
     except ModuleNotFoundError:
