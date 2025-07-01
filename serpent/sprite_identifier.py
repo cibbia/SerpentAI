@@ -13,6 +13,34 @@ class SpriteIdentifier:
             return self.identify_by_constellation_of_pixels(sprite, score_threshold=score_threshold, debug=debug)
         elif mode == "SSIM":
             return self.identify_by_ssim(sprite, score_threshold=score_threshold, debug=debug)
+        elif mode == "YOLO":
+            # Treat sprite.image_data[...,0] as an RGB image and run YOLO on it
+            from serpent.yolo_detector import detect_sprites  # local import to avoid heavy dep on stubbed envs
+            image = sprite.image_data[..., :3, 0]
+            boxes = detect_sprites(image)
+            # Determine highest-confidence detection whose label matches registered sprites
+            if not boxes:
+                return "UNKNOWN"
+
+            # Ultralytics YOLO uses class indices; mapping must be provided by the trained model.
+            # We assume class IDs correspond to sprite names registered (lowercase) via the model.names dict.
+            try:
+                from ultralytics import YOLO  # type: ignore
+
+                model = YOLO("yolov8n.pt")
+                idx_to_name = model.names  # type: ignore
+            except Exception:
+                idx_to_name = {}
+
+            # Pick best box by confidence
+            best = max(boxes, key=lambda b: b[4])
+            conf = best[4] * 100
+            class_id = best[5]
+            candidate_name = idx_to_name.get(class_id, None)
+            if candidate_name is None:
+                return "UNKNOWN"
+
+            return candidate_name.upper() if conf >= score_threshold else "UNKNOWN"
 
     def identify_by_signature_colors(self, query_sprite, score_threshold=0, debug=False):
         top_sprite_score = 0

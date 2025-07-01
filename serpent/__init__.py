@@ -4,6 +4,7 @@
 
 import sys
 import types
+import numpy as np
 
 
 def _create_stub_module(name: str, attrs: dict | None = None):
@@ -103,6 +104,31 @@ except ModuleNotFoundError:
         "Box": object,
         "Discrete": object,
     })
+
+# ------- ultralytics & onnxruntime stubs ------------------------------------
+for _opt in ("ultralytics", "onnxruntime"):
+    try:
+        __import__(_opt)
+    except ModuleNotFoundError:
+        _create_stub_module(_opt)
+        if _opt == "ultralytics":
+            class _YOLOStub:  # noqa: D401
+                def __init__(self, *args, **kwargs):
+                    self.names = {}
+
+                def predict(self, *args, **kwargs):
+                    # Return object with minimal interface
+                    class _BoxStub:
+                        xyxy = np.empty((0, 4))  # type: ignore
+                        conf = np.empty(0)
+                        cls = np.empty(0)
+
+                    class _ResultStub:
+                        boxes = _BoxStub()
+
+                    return [_ResultStub()]
+
+            _create_stub_module("ultralytics", {"YOLO": _YOLOStub})
 
 # Expose package version
 __version__ = "0.1.dev0"
