@@ -147,3 +147,10 @@ try:
 except ModuleNotFoundError:
     _create_stub_module("streamlit", {"run": lambda *args, **kwargs: None})
     _create_stub_module("streamlit_drawable_canvas")
+
+# requests & tqdm stubs
+for _m in ("requests", "tqdm"):
+    try:
+        __import__(_m)
+    except ModuleNotFoundError:
+        _create_stub_module(_m, {"get": lambda *a, **k: None} if _m=="requests" else {"tqdm": lambda x, **k: x})

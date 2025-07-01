@@ -509,5 +509,45 @@ cli.add_command(grab_frames)
 cli.add_command(tensorboard)
 
 
+@click.group(help="Manage downloaded models")
+def model():
+    pass
+
+
+@model.command("list")
+def model_list():
+    from serpent.model_hub import list_models, local_models
+    click.echo("Remote models:")
+    for m in list_models():
+        click.echo(f" - {m['id']}: {m['game']} ({m['algo']})")
+    click.echo("\nLocal models:")
+    for p in local_models():
+        click.echo(f" - {p.relative_to(p.home())}")
+
+
+@model.command("pull")
+@click.argument("model_id")
+def model_pull(model_id):
+    from serpent.model_hub import download_model
+    dest = download_model(model_id)
+    click.echo(f"Downloaded to {dest}")
+
+
+@model.command("delete")
+@click.argument("model_id")
+def model_delete(model_id):
+    from serpent.model_hub import _CACHE_DIR
+    import shutil
+    target = list(_CACHE_DIR.glob(f"**/{model_id}"))
+    if not target:
+        click.echo("Model not found.")
+        return
+    shutil.rmtree(target[0].parent)
+    click.echo("Deleted.")
+
+
+cli.add_command(model)
+
+
 if __name__ == "__main__":
     cli()

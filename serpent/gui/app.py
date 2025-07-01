@@ -17,13 +17,16 @@ st.set_page_config(page_title="Serpent.AI Dashboard", layout="wide")
 
 st.title("🕹️  Serpent.AI Dashboard")
 
-page = st.sidebar.selectbox("Page", ["Stream", "Reward Wizard", "Action Editor"])
+page = st.sidebar.selectbox("Page", ["Stream", "Reward Wizard", "Action Editor", "Model Hub"])
 
 if page == "Reward Wizard":
     from serpent.gui import reward_wizard  # noqa: F401
     st.stop()
 elif page == "Action Editor":
     from serpent.gui import action_editor  # noqa: F401
+    st.stop()
+elif page == "Model Hub":
+    from serpent.gui import model_hub  # noqa: F401
     st.stop()
 
 if FrameConsumerSync is None:
