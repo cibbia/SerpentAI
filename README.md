@@ -68,3 +68,15 @@ Serpent.AI now ships with **two install flavours**.
 
 • CPython 3.8 → 3.13.
 • Linux & Windows officially supported. macOS may work but GPU training is **not** supported.
+
+### Reinforcement-Learning with Stable-Baselines3
+
+The `[full]` install now includes **Stable-Baselines3** and **Gymnasium**.
+
+```bash
+pip install serpentai[full]
+
+python -m serpent.examples.train_sb3  # coming soon
+```
+
+This will let you train PPO/A2C/DQN agents on your favourite games with just a few lines of code.

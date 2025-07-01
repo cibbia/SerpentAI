@@ -94,5 +94,15 @@ except ModuleNotFoundError:
     _create_stub_module("PIL")
     sys.modules["PIL.Image"] = image_stub
 
+# ------- gymnasium stub ------------------------------------------------------
+try:
+    import gymnasium  # noqa: F401
+except ModuleNotFoundError:
+    _create_stub_module("gymnasium")
+    _create_stub_module("gymnasium.spaces", {
+        "Box": object,
+        "Discrete": object,
+    })
+
 # Expose package version
 __version__ = "0.1.dev0"
