@@ -34,6 +34,11 @@ from redis import StrictRedis
 
 from serpent.config import config
 
+try:
+    from serpent.grpc.frame_client import FrameConsumerSync  # type: ignore
+except Exception:
+    FrameConsumerSync = None  # type: ignore
+
 
 class GameError(BaseException):
     pass
@@ -274,10 +279,15 @@ class Game(offshoot.Pluggable):
         if not self.is_launched:
             raise GameError(f"Game '{self.__class__.__name__}' is not running...")
 
+        use_grpc = config["frame_grabber"].get("transport", "redis") == "grpc" and FrameConsumerSync is not None
+
         if self.frame_grabber_process is not None:
             self.stop_frame_grabber()
 
         frame_grabber_command = f"serpent grab_frames {self.window_geometry['width']} {self.window_geometry['height']} {self.window_geometry['x_offset']} {self.window_geometry['y_offset']}"
+
+        if use_grpc:
+            frame_grabber_command += " --grpc"
 
         pipeline_string = pipeline_string or self.frame_transformation_pipeline_string
 
@@ -291,6 +301,11 @@ class Game(offshoot.Pluggable):
 
         atexit.register(self._handle_signal_frame_grabber, 15, None, False)
 
+        if use_grpc:
+            self._frame_consumer = FrameConsumerSync()
+        else:
+            self._frame_consumer = None
+
     @offshoot.forbidden
     def stop_frame_grabber(self):
         if self.frame_grabber_process is None:
@@ -303,6 +318,21 @@ class Game(offshoot.Pluggable):
 
     @offshoot.forbidden
     def grab_latest_frame(self):
+        if hasattr(self, "_frame_consumer") and self._frame_consumer is not None:
+            frame_msg = self._frame_consumer.get_frame()
+            import numpy as np
+            if frame_msg.format == "PNG":
+                import skimage.io
+
+                frame_array = skimage.io.imread(frame_msg.data)
+            else:
+                frame_array = np.frombuffer(frame_msg.data, dtype=np.uint8).reshape((frame_msg.height, frame_msg.width, 3))
+
+            from serpent.game_frame import GameFrame
+
+            gf = GameFrame(frame_array, timestamp=frame_msg.timestamp / 1e6)
+            return gf, gf  # No separate pipeline when using gRPC for now
+
         game_frame_buffer, game_frame_buffer_pipeline = FrameGrabber.get_frames_with_pipeline([0])
 
         return game_frame_buffer.frames[0], game_frame_buffer_pipeline.frames[0]

@@ -75,3 +75,27 @@ class FrameConsumer:
 
     async def close(self):
         await self._channel.close()
+
+
+# ------------------------------------------------------------
+# Synchronous helper for legacy Game loop (no asyncio required)
+# ------------------------------------------------------------
+
+
+class FrameConsumerSync:
+    """Blocking consumer wrapper using the sync gRPC API."""
+
+    def __init__(self, address: str = "localhost:50051"):
+        if grpc is None:
+            raise RuntimeError("gRPC not available")
+        self._channel = grpc.insecure_channel(address)  # type: ignore
+        self._stub = frame_pb2_grpc.FrameServiceStub(self._channel)  # type: ignore
+        # Start response iterator with empty request iterator
+        self._response_iterator = self._stub.StreamFrames(iter([]))
+
+    def get_frame(self):
+        """Blocking call that returns the next Frame protobuf message."""
+        return next(self._response_iterator)
+
+    def close(self):
+        self._channel.close()
