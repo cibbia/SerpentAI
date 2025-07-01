@@ -191,6 +191,21 @@ def record():
     pass
 
 
+# Frame Bus
+
+@click.command(help="Start the gRPC frame bus server")
+@click.option("--address", default="[::]:50051", help="Bind address, e.g. [::]:50051")
+def framebus(address):
+    """Run the async gRPC FrameService."""
+    try:
+        import asyncio
+        from serpent.grpc.frame_service import serve
+
+        asyncio.run(serve(address=address))
+    except Exception as exc:
+        print("Failed to start frame bus:", exc)
+
+
 # SDK
 # These commands are aimed at developers wanting to create plugins for Serpent.AI
 @click.command(help="SDK - Perform Serpent.AI SDK setup in the current directory")
@@ -420,6 +435,9 @@ cli.add_command(launch)
 cli.add_command(train)
 cli.add_command(play)
 cli.add_command(record)
+
+# Frame Bus
+cli.add_command(framebus)
 
 # SDK
 cli.add_command(sdk_setup)

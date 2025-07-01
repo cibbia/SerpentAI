@@ -13,13 +13,17 @@ from serpent.game_frame_buffer import GameFrameBuffer
 
 from serpent.frame_transformation_pipeline import FrameTransformationPipeline
 
+try:
+    from serpent.grpc.frame_client import FrameProducer  # type: ignore
+except Exception:
+    FrameProducer = None  # type: ignore
 
 redis_client = StrictRedis(**config["redis"])
 
 
 class FrameGrabber:
 
-    def __init__(self, width=640, height=480, x_offset=0, y_offset=0, fps=30, pipeline_string=None, buffer_seconds=5):
+    def __init__(self, width=640, height=480, x_offset=0, y_offset=0, fps=30, pipeline_string=None, buffer_seconds=5, use_grpc: bool = False, grpc_address: str = "localhost:50051"):
         self.width = width
         self.height = height
 
@@ -33,6 +37,17 @@ class FrameGrabber:
         self.screen_grabber = mss.mss()
 
         self.frame_transformation_pipeline = None
+
+        # Optional gRPC producer
+        self._grpc_producer = None
+        if use_grpc and FrameProducer is not None:
+            import asyncio
+
+            self._loop = asyncio.get_event_loop()
+            self._grpc_producer = FrameProducer(address=grpc_address)
+            self._loop.run_until_complete(self._grpc_producer.start())
+
+        self._use_grpc = self._grpc_producer is not None
 
         if pipeline_string is not None and isinstance(pipeline_string, str):
             self.frame_transformation_pipeline = FrameTransformationPipeline(pipeline_string=pipeline_string)
@@ -57,8 +72,17 @@ class FrameGrabber:
 
             frame_bytes = f"{cycle_start}~{frame_shape}~{frame_dtype}~".encode("utf-8") + frame.tobytes()
 
-            self.redis_client.lpush(config["frame_grabber"]["redis_key"], frame_bytes)
-            self.redis_client.ltrim(config["frame_grabber"]["redis_key"], 0, self.frame_buffer_size)
+            if self._use_grpc:
+                # Push PNG bytes for efficiency
+                try:
+                    self._loop.run_until_complete(
+                        self._grpc_producer.push_frame(cycle_start, frame_pipeline if self._has_png_transformation_pipeline() else frame.tobytes(), self.width, self.height, fmt="PNG" if self._has_png_transformation_pipeline() else "RAW")
+                    )
+                except Exception:
+                    pass
+            else:
+                self.redis_client.lpush(config["frame_grabber"]["redis_key"], frame_bytes)
+                self.redis_client.ltrim(config["frame_grabber"]["redis_key"], 0, self.frame_buffer_size)
 
             if self._has_png_transformation_pipeline():
                 frame_pipeline_shape = "PNG"
@@ -71,8 +95,9 @@ class FrameGrabber:
 
                 frame_pipeline_bytes = f"{cycle_start}~{frame_pipeline_shape}~{frame_pipeline_dtype}~".encode("utf-8") + frame_pipeline.tobytes()
 
-            self.redis_client.lpush(config["frame_grabber"]["redis_key"] + "_PIPELINE", frame_pipeline_bytes)
-            self.redis_client.ltrim(config["frame_grabber"]["redis_key"] + "_PIPELINE", 0, self.frame_buffer_size)
+            if not self._use_grpc:
+                self.redis_client.lpush(config["frame_grabber"]["redis_key"] + "_PIPELINE", frame_pipeline_bytes)
+                self.redis_client.ltrim(config["frame_grabber"]["redis_key"] + "_PIPELINE", 0, self.frame_buffer_size)
 
             cycle_end = time.time()
 
