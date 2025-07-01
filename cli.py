@@ -362,6 +362,36 @@ def sdk_uninstall_plugin():
     pass
 
 
+@click.command(help="Capture frames from the game window")
+@click.argument("width", type=int)
+@click.argument("height", type=int)
+@click.argument("x_offset", type=int)
+@click.argument("y_offset", type=int)
+@click.argument("pipeline", required=False)
+@click.option("--grpc", "--use-grpc", is_flag=True, help="Stream frames over gRPC instead of Redis")
+def grab_frames(width, height, x_offset, y_offset, pipeline, use_grpc):
+    """Spawn a FrameGrabber process.
+
+    This command is invoked internally by `Game.start_frame_grabber()` but can
+    also be run manually for debugging.
+    """
+    from serpent.frame_grabber import FrameGrabber
+
+    fg = FrameGrabber(
+        width=width,
+        height=height,
+        x_offset=x_offset,
+        y_offset=y_offset,
+        pipeline_string=pipeline,
+        use_grpc=use_grpc,
+    )
+
+    try:
+        fg.start()
+    except KeyboardInterrupt:
+        pass
+
+
 def _download_module(url, file_path):
     import requests
     import tqdm
@@ -453,6 +483,9 @@ cli.add_command(sdk_package_game_agent_plugin)
 cli.add_command(sdk_package_rl_agent_plugin)
 cli.add_command(sdk_install_plugin)
 cli.add_command(sdk_uninstall_plugin)
+
+# Register command
+cli.add_command(grab_frames)
 
 
 if __name__ == "__main__":
