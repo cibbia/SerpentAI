@@ -34,6 +34,11 @@ class WindowController:
     def get_window_geometry(self, window_id):
         return self.adapter.get_window_geometry(window_id)
 
+    def list_windows(self):
+        if hasattr(self.adapter, "list_windows"):
+            return self.adapter.list_windows()
+        return []
+
     def _load_adapter(self):
         if is_linux():
             from serpent.window_controllers.linux_window_controller import LinuxWindowController

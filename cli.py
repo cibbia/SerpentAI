@@ -99,8 +99,15 @@ def update():
 
 @click.command(help="Launch the Serpent.AI GUI")
 def gui():
-    # TODO: Implement
-    pass
+    """Launch Streamlit-based dashboard."""
+    import subprocess, sys, os, importlib
+
+    app_path = os.path.join(os.path.dirname(__file__), "serpent", "gui", "app.py")
+
+    try:
+        subprocess.run([sys.executable, "-m", "streamlit", "run", app_path], check=True)
+    except FileNotFoundError:
+        click.echo("Streamlit is not installed. Install with `pip install serpentai[full]`.")
 
 
 @click.command(help="Download additional tools and modules")

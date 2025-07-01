@@ -140,3 +140,9 @@ except ModuleNotFoundError:
     # Minimal stub to satisfy imports
     _create_stub_module("grpc")
     _create_stub_module("grpc.aio")
+
+# ------- streamlit stub -----------------------------------------------------
+try:
+    import streamlit  # noqa: F401
+except ModuleNotFoundError:
+    _create_stub_module("streamlit", {"run": lambda *args, **kwargs: None})

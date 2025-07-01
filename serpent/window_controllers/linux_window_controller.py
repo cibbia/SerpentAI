@@ -48,3 +48,12 @@ class LinuxWindowController(WindowController):
         geometry["y_offset"] = int(re.match(r"\s+Absolute upper-left Y:\s+([0-9]+)", window_information.split("\n")[3]).group(1))
 
         return geometry
+
+    def list_windows(self):
+        """Return a list of titles of visible X11 windows."""
+        try:
+            output = subprocess.check_output(shlex.split("xdotool search --onlyvisible --name '' getwindowname %@"), stderr=subprocess.DEVNULL)
+            names = output.decode("utf-8").strip().split("\n") if output else []
+            return names
+        except Exception:
+            return []
